@@ -4,21 +4,21 @@ Information about the user to help personalize interactions.
 
 ## Basic Information
 
-- **Name**: (your name)
-- **Timezone**: (your timezone, e.g., UTC+8)
-- **Language**: (preferred language)
+- **Name**: Pasindu
+- **Timezone**: UTC+5:30 (Sri Lanka)
+- **Language**: English
 
 ## Preferences
 
 ### Communication Style
 
-- [ ] Casual
+- [x] Casual
 - [ ] Professional
-- [ ] Technical
+- [x] Technical
 
 ### Response Length
 
-- [ ] Brief and concise
+- [x] Brief and concise
 - [ ] Detailed explanations
 - [ ] Adaptive based on question
 
@@ -26,23 +26,24 @@ Information about the user to help personalize interactions.
 
 - [ ] Beginner
 - [ ] Intermediate
-- [ ] Expert
+- [x] Expert
 
 ## Work Context
 
-- **Primary Role**: (your role, e.g., developer, researcher)
-- **Main Projects**: (what you're working on)
-- **Tools You Use**: (IDEs, languages, frameworks)
+- **Primary Role**: Developer / Automation Engineer
+- **Main Projects**: Social media automation (Telegram channel poster, WhatsApp newsletter bot)
+- **Tools You Use**: Node.js v24.15.0, Chrome, TMDB API, IMDB, Telegram, WhatsApp Web
 
 ## Topics of Interest
 
-- 
-- 
-- 
+- Social media automation
+- Movie/TV show content publishing
+- Bot development
 
 ## Special Instructions
 
-(Any specific instructions for how the assistant should behave)
+- Prefer doing over describing — execute tasks directly when possible
+- Use system Chrome (`C:\Program Files\Google\Chrome\Application\chrome.exe`) instead of Puppeteer Chromium downloads
 
 ---
 
