@@ -21,21 +21,28 @@ This file stores important information that should persist across sessions.
 ## Project Context
 
 ### CSE Heartbeat
-- Scrapes Colombo Stock Exchange trade summary API, sends alerts to Telegram channel @cse_alert (chat ID: -1003273701293) when stock movements ≥2%
-- Script: `C:\Users\pasindu\Desktop\automation\cse-heartbeat\cse_scraper.py`
-- API endpoint: `https://www.cse.lk/api/tradeSummary` (POST with form data, not JSON); response key: `reqTradeSummery`; fields: `symbol`, `name`, `lastTradedPrice`, `changePercentage`, `change`, `volume`
-- Heartbeat interval: 300 seconds (5 minutes); filtering threshold: ≥2% price change
-- Trading hours: Monday–Friday, 9:30am–2:30pm
-- Nanobot agent URL: `http://localhost:8000/nanobot/agent/run`
+- Scrapes Colombo Stock Exchange trade summary API, posts ALL changed stocks to Telegram channel @cse_alert (chat ID: -1003273701293)
+- Script: `C:\Users\pasindu\.nanobot\workspace\skills\cse-heartbeat\cse_scraper.py`
+- Runner: `C:\Users\pasindu\.nanobot\workspace\skills\cse-heartbeat\run_one.py`
+- API endpoint: `https://www.cse.lk/api/tradeSummary` (POST with form data); response key: `reqTradeSummery`; fields: `symbol`, `name`, `lastTradedPrice`, `changePercentage`, `change`, `volume`
+- Shows ALL changed stocks (non-zero movement), sorted ascending (losers → gainers)
+- Format: monospace table with 🟢/🔴 indicators, auto-splits into multiple messages if >4096 chars
+- ~220 out of 290 stocks typically show non-zero movement
+- Heartbeat interval: 300 seconds (5 minutes)
+- Trading hours: Monday–Friday, 9:30am–2:30pm IST (4:00-9:00 UTC)
+- Cron job `cse-heartbeat-5min` (id: 9c14f3c3, cron: `*/5 * * * * UTC`)
 - All Telegram posting goes through OWL's message tool (nanobot's own bot); raw bot API calls via Python requests do NOT work
-- Bot token `8693066753:AAEiL2TnrT5-BGiNRncphauixA7hrcZtHFE` was provided but is NOT used — nanobot's own bot handles all Telegram posting
-- Skill created at `skills/cse-heartbeat/` with SKILL.md and cse_scraper.py
-- Old deleted files from cse-heartbeat folder: `run.py`, `test_api.py`, `telegram_post.py`, `output.json`
-- Cron job `daily-trending-post` exists (id: af7bbc63, cron: `0 9 * * * UTC`) — purpose unclear, may need updating for CSE heartbeat schedule
-- Scraper output was empty at last check — parsing issue with API response fields still needs debugging
+- `send_telegram()` in cse_scraper.py only prints — OWL sends via message tool
+- `run_one.py` resets `last_sent_prices` each run for testing
 
 ### Vidbanda Movie Poster
-- Posts movie info + banner to Telegram channel (chat ID: -1003809102397) using `generate_post.py` + OWL message tool
+- Posts movie/TV info + banner to Telegram channel (chat ID: -1003809102397)
+- Script: `C:\Users\pasindu\Desktop\automation\fb_post_maker\scripts\generate_post.py`
+- **Fix applied (2026-05-25):** Numeric TMDB IDs now tried directly first instead of being prefixed with `tt`
+- Banner folder: `C:\Users\pasindu\Desktop\automation\fb_post_maker\fb_banners\`
+- Output file: `C:\Users\pasindu\Desktop\automation\fb_post_maker\output.json`
+- Watch link format: `https://www.vidbanda.duckdns.org/details/<type>/<tmdb_id>`
+- Banner naming: `<tmdb_id>_<type>.jpg`
 
 ### Other
 - MarketWatch Sri Lanka page is an alternative CSE data source but blocks repeated requests (rate limiting)
