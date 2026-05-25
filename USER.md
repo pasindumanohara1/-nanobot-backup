@@ -4,7 +4,9 @@ Information about the user to help personalize interactions.
 
 ## Basic Information
 
-- **Name**: Pasindu
+- **Full Name**: Pasindu Manohara
+- **Username**: @Pasindumanohara
+- **Telegram ID**: 1721575073
 - **Timezone**: UTC+5:30 (Sri Lanka)
 - **Language**: English
 
@@ -32,7 +34,8 @@ Information about the user to help personalize interactions.
 
 - **Primary Role**: Developer / Automation Engineer
 - **Main Projects**: Social media automation (Telegram channel poster, WhatsApp newsletter bot)
-- **Tools You Use**: Node.js v24.15.0, Chrome, TMDB API, IMDB, Telegram, WhatsApp Web
+- **Tools You Use**: Node.js v24.15.0, Python 3.12, Chrome, TMDB API, IMDB, Telegram, WhatsApp Web
+- **Working Directory**: `C:\Users\pasindu\Desktop\automation\`
 
 ## Topics of Interest
 
