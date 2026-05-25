@@ -46,9 +46,17 @@ This file stores important information that should persist across sessions.
 - Banner naming: `<tmdb_id>_<type>.jpg`
 
 ### Islamic Post Generator
-- Skill created at `C:\Users\pasindu\.nanobot\workspace\skills\islamic-post-generator/`
-- Supports 5 post types: quran, hadith, dhikr, dua, reminder
-- User wants Islamic posts sent to their Telegram (ID: 1721575073); unclear if a dedicated channel is needed
+- Skill: `skills/islamic-post-generator/` (SKILL.md exists)
+- Tech stack: Python + Pillow (PIL) — NOT AI image models
+- Default location: Colombo, Sri Lanka (lat 6.9271, lon 79.8612)
+- Calculation method: Muslim World League (method 2)
+- Supports 6 post types: `quran_verse`, `hadith`, `dhikr`, `dua`, `reminder`, `prayer_times`
+- Templates: individual Python files in `skills/islamic-post-generator/templates/`
+- Font sizes: Arabic 54–72px, translations 32–36px
+- APIs: AlAdhan, UmmahAPI
+- Design style: engagement-focused (big text, bold visuals, engagement questions on images)
+- 10 different design templates
+- Sends to Telegram ID: 1721575073
 
 ### Other
 - MarketWatch Sri Lanka page is an alternative CSE data source but blocks repeated requests (rate limiting)
