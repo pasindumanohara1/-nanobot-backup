@@ -1,0 +1,572 @@
+1| """
+2| Islamic Engagement Post Generator with Images
+3| Uses AlAdhan API for prayer times, Hijri dates, and generates beautiful images.
+4| """
+5| 
+6| import json
+7| import random
+8| import sys
+9| import os
+10| import textwrap
+11| import io
+12| import urllib.request
+13| from datetime import datetime, timezone, timedelta
+14| 
+15| try:
+16|     from PIL import Image, ImageDraw, ImageFont, ImageFilter
+17|     HAS_PILLOW = True
+18| except ImportError:
+19|     HAS_PILLOW = False
+20| 
+21| IST = timezone(timedelta(hours=5, minutes=30))
+22| OUTPUT_DIR = os.path.dirname(os.path.abspath(__file__))
+23| 
+24| # ====== API CONFIG ======
+25| ALADHAN_BASE = "https://api.aladhan.com/v1"
+26| UMMAH_BASE = "https://ummahapi.com"
+27| 
+28| # Sri Lanka coordinates (Colombo)
+29| DEFAULT_LAT = 6.9271
+30| DEFAULT_LON = 79.8612
+31| CALCULATION_METHOD = 2  # Muslim World League
+32| 
+33| # ====== QURAN VERSES ======
+34| QURAN_VERSES = [
+35|     {"surah": "Al-Baqarah", "ayah": 286, "arabic": "لَا يُكَلِّفُ ٱللَّهُ نَفْسًا إِلَّا وُسْعَهَا", "translation": "Allah does not burden a soul beyond that it can bear.", "reference": "Quran 2:286"},
+36|     {"surah": "Ar-Ra'd", "ayah": 28, "arabic": "أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ", "translation": "Verily, in the remembrance of Allah do hearts find rest.", "reference": "Quran 13:28"},
+37|     {"surah": "Al-Imran", "ayah": 139, "arabic": "وَلَا تَهِنُوا وَلَا تَحْزَنُوا وَأَنتُمُ ٱلْأَعْلَوْنَ إِن كُنتُم مُّؤْمِنِينَ", "translation": "Do not lose heart, nor fall into despair, for you shall prevail if you are truly believers.", "reference": "Quran 3:139"},
+38|     {"surah": "At-Talaq", "ayah": 3, "arabic": "وَمَن يَتَوَكَّلْ عَلَى ٱللَّهِ فَهُوَ حَسْبُهُ", "translation": "And whoever relies upon Allah – then He is sufficient for him.", "reference": "Quran 65:3"},
+39|     {"surah": "Al-Baqarah", "ayah": 152, "arabic": "فَٱذْكُرُونِىٓ أَذْكُرْكُمْ", "translation": "So remember Me; I will remember you.", "reference": "Quran 2:152"},
+40|     {"surah": "Al-Ankabut", "ayah": 69, "arabic": "وَٱلَّذِينَ جَٰهَدُوا فِينَا لَنَهْدِيَنَّهُمْ سُبُلَنَا", "translation": "And those who strive for Us – We will surely guide them to Our ways.", "reference": "Quran 29:69"},
+41|     {"surah": "Az-Zumar", "ayah": 53, "arabic": "قُلْ يَٰعِبَادِىَ ٱلَّذِينَ أَسْرَفُوا۟ عَلَىٰٓ أَنفُسِهِمْ لَا تَقْنَطُوا۟ مِن رَّحْمَةِ ٱللَّهِ", "translation": "Say: O My servants who have transgressed against themselves, do not despair of the mercy of Allah.", "reference": "Quran 39:53"},
+42|     {"surah": "Ash-Sharh", "ayah": 5, "arabic": "فَإِنَّ مَعَ ٱلْعُسْرِ يُسْرًا", "translation": "Indeed, with hardship comes ease.", "reference": "Quran 94:5"},
+43|     {"surah": "Al-Baqarah", "ayah": 155, "arabic": "وَلَنَبْلُوَنَّكُم بِشَىْءٍ مِّنَ ٱلْخَوْفِ وَٱلْجُوعِ وَنَقْصٍ مِّنَ ٱلْأَمْوَٰلِ وَٱلْأَنفُسِ", "translation": "And We will surely test you with something of fear and hunger and a loss of wealth and lives.", "reference": "Quran 2:155"},
+44|     {"surah": "Al-Baqarah", "ayah": 156, "arabic": "إِنَّا لِلَّهِ وَإِنَّآ إِلَيْهِ رَٰجِعُونَ", "translation": "Indeed, to Allah we belong and to Him we shall return.", "reference": "Quran 2:156"},
+45|     {"surah": "Al-Baqarah", "ayah": 255, "arabic": "ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ ٱلْحَىُّ ٱلْقَيُّومُ", "translation": "Allah – there is no deity except Him, the Ever-Living, the Sustainer of existence.", "reference": "Quran 2:255 (Ayat al-Kursi)"},
+46|     {"surah": "An-Nahl", "ayah": 97, "arabic": "مَنْ عَمِلَ صَٰلِحًا مِّن ذَكَرٍ أَوْ أُنثَىٰ وَهُوَ مُؤْمِنٌ فَلَنُحْيِيَنَّهُۥ حَيَوٰةً طَيِّبَةً", "translation": "Whoever does righteousness, whether male or female, while being a believer – We will surely grant them a good life.", "reference": "Quran 16:97"},
+47| ]
+48| 
+49| # ====== HADITH ======
+50| HADITH_COLLECTION = [
+51|     {"text": "The best among you are those who have the best manners and character.", "source": "Sahih al-Bukhari 3559"},
+52|     {"text": "None of you truly believes until he loves for his brother what he loves for himself.", "source": "Sahih al-Bukhari 13"},
+53|     {"text": "The strong person is not the one who can wrestle someone else down. The strong person is the one who can control himself when he is angry.", "source": "Sahih al-Bukhari 6114"},
+54|     {"text": "Whoever believes in Allah and the Last Day, let him speak good or remain silent.", "source": "Sahih al-Bukhari 6018"},
+55|     {"text": "Make things easy and do not make them difficult. Give glad tidings and do not repel people.", "source": "Sahih al-Bukhari 69"},
+56|     {"text": "The world is a prison for the believer and a paradise for the disbeliever.", "source": "Sahih Muslim 2956"},
+57|     {"text": "Verily, actions are judged by intentions, and everyone will get what they intended.", "source": "Sahih al-Bukhari 1"},
+58|     {"text": "The most beloved of deeds to Allah are those that are most consistent, even if they are small.", "source": "Sahih al-Bukhari 6464"},
+59|     {"text": "Whoever removes a worldly hardship from a believer, Allah will remove one of his hardships on the Day of Resurrection.", "source": "Sahih Muslim 2959"},
+60|     {"text": "He who eats his fill while his neighbor goes without food is not a believer.", "source": "Al-Adab Al-Mufrad 112"},
+61| ]
+62| 
+63| # ====== DHIKR ======
+64| DHIKR_COLLECTION = [
+65|     {"arabic": "سُبْحَانَ ٱللَّهِ", "transliteration": "SubhanAllah", "meaning": "Glory be to Allah", "count": 33},
+66|     {"arabic": "ٱلْحَمْدُ لِلَّهِ", "transliteration": "Alhamdulillah", "meaning": "All praise is due to Allah", "count": 33},
+67|     {"arabic": "ٱللَّهُ أَكْبَرُ", "transliteration": "Allahu Akbar", "meaning": "Allah is the Greatest", "count": 34},
+68|     {"arabic": "لَآ إِلَٰهَ إِلَّآ ٱللَّهُ", "transliteration": "La ilaha illallah", "meaning": "There is no god but Allah", "count": 100},
+69|     {"arabic": "أَسْتَغْفِرُ ٱللَّهَ", "transliteration": "Astaghfirullah", "meaning": "I seek forgiveness from Allah", "count": 100},
+70|     {"arabic": "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِٱللَّهِ", "transliteration": "La hawla wa la quwwata illa billah", "meaning": "There is no power nor strength except with Allah", "count": 100},
+71|     {"arabic": "سُبْحَانَ ٱللَّهِ وَبِحَمْدِهِ", "transliteration": "SubhanAllahi wa bihamdihi", "meaning": "Glory be to Allah and His is the praise", "count": 100},
+72| ]
+73| 
+74| # ====== DUA ======
+75| DUA_COLLECTION = [
+76|     {"arabic": "رَبَّنَا آتِنَا فِى ٱلدُّنْيَا حَسَنَةً وَفِى ٱلْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ ٱلنَّارِ", "transliteration": "Rabbana atina fid-dunya hasanatan wa fil-akhirati hasanatan wa qina adhaban-nar", "meaning": "Our Lord, give us in this world that which is good and in the Hereafter that which is good, and save us from the punishment of the Fire.", "source": "Quran 2:201"},
+77|     {"arabic": "رَبِّ ٱشْرَحْ لِى صَدْرِى وَيَسِّرْ لِىٓ أَمْرِى", "transliteration": "Rabbi shrah li sadri wa yassir li amri", "meaning": "My Lord, expand for me my chest and ease for me my task.", "source": "Quran 20:25-26"},
+78|     {"arabic": "رَبِّ زِدْنِى عِلْمًا", "transliteration": "Rabbi zidni ilma", "meaning": "My Lord, increase me in knowledge.", "source": "Quran 20:114"},
+79|     {"arabic": "رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا", "transliteration": "Rabbana la tuzigh quloobana ba'da idh hadaytana", "meaning": "Our Lord, let not our hearts deviate after You have guided us.", "source": "Quran 3:8"},
+80|     {"arabic": "ٱللَّهُمَّ إِنِّىٓ أَسْأَلُكَ ٱلْهُدَىٰ وَٱلتُّقَىٰ وَٱلْعَفَافَ وَٱلْغِنَىٰ", "transliteration": "Allahumma inni as'aluka al-huda wa at-tuqa wa al-'afafa wa al-ghina", "meaning": "O Allah, I ask You for guidance, piety, chastity, and self-sufficiency.", "source": "Sahih Muslim 2721"},
+81|     {"arabic": "ٱللَّهُمَّ أَعِنِّى عَلَىٰ ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ", "transliteration": "Allahumma a'inni 'ala dhikrika wa shukrika wa husni 'ibadatik", "meaning": "O Allah, help me to remember You, to be grateful to You, and to worship You in the best manner.", "source": "Sunan Abu Dawud 1522"},
+82| ]
+83| 
+84| # ====== ISLAMIC REMINDERS ======
+85| ISLAMIC_REMINDERS = [
+86|     {"title": "Sadaqah Reminder", "text": "The shade of a believer on the Day of Resurrection will be their charity. Give in charity today, even if it's a smile — for a kind word is charity."},
+87|     {"title": "Istighfar Reminder", "text": "Make istighfar a habit. Whoever makes it frequently, Allah will provide a way out of every relief, a solution to every worry, and provision from where they don't expect."},
+88|     {"title": "Salawat Reminder", "text": "Send blessings upon the Prophet ﷺ — for every time you send salawat, Allah sends blessings upon you 10 times, and your rank is raised 10 degrees."},
+89|     {"title": "Gratitude Reminder", "text": "Be grateful in every situation. Allah says: 'If you are grateful, I will surely increase you [in blessing].' (Quran 14:7) Start your day with Alhamdulillah."},
+90|     {"title": "Patience Reminder", "text": "When you face hardship, remember: Allah does not burden a soul beyond what it can bear. Be patient — relief is coming. 'Verily, with hardship comes ease.'"},
+91|     {"title": "Quran Reminder", "text": "Make Quran part of your daily routine. Even if it's just one ayah — the Prophet ﷺ said: 'The best of you are those who learn the Quran and teach it.'"},
+92|     {"title": "Dua Reminder", "text": "Never underestimate the power of dua. It is the weapon of the believer. Allah is near and responsive — call upon Him with hope and sincerity."},
+93|     {"title": "Fajr Reminder", "text": "The one who prays Fajr is under the protection of Allah. Don't miss it! The Prophet ﷺ said: 'Whoever prays Fajr is under the guarantee of Allah.'"},
+94| ]
+95| 
+96| # ====== COLOR THEMES ======
+97| THEMES = [
+98|     {"bg_top": (15, 30, 60), "bg_bottom": (30, 60, 100), "accent": (212, 175, 55), "text": (255, 255, 255), "subtext": (200, 200, 200)},  # Navy + Gold
+99|     {"bg_top": (20, 50, 30), "bg_bottom": (40, 90, 50), "accent": (255, 215, 0), "text": (255, 255, 255), "subtext": (200, 220, 200)},    # Green + Gold
+100|     {"bg_top": (50, 20, 60), "bg_bottom": (80, 40, 100), "accent": (255, 200, 100), "text": (255, 255, 255), "subtext": (220, 200, 230)},  # Purple + Gold
+101|     {"bg_top": (60, 15, 15), "bg_bottom": (100, 30, 30), "accent": (255, 220, 150), "text": (255, 255, 255), "subtext": (230, 200, 200)},  # Maroon + Cream
+102|     {"bg_top": (10, 40, 50), "bg_bottom": (20, 70, 80), "accent": (150, 220, 200), "text": (255, 255, 255), "subtext": (200, 230, 220)},  # Teal + Mint
+103| ]
+104| 
+105| 
+106| def api_get(url):
+107|     """Make an API request and return JSON."""
+108|     try:
+109|         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+110|         with urllib.request.urlopen(req, timeout=10) as resp:
+111|             return json.loads(resp.read().decode())
+112|     except Exception as e:
+113|         return {"error": str(e)}
+114| 
+115| 
+116| def get_prayer_times(lat=DEFAULT_LAT, lon=DEFAULT_LON):
+117|     """Fetch prayer times from AlAdhan API."""
+118|     now_ist = datetime.now(IST)
+119|     date_str = now_ist.strftime("%d-%m-%Y")
+120|     url = f"{ALADHAN_BASE}/timings/{date_str}?latitude={lat}&longitude={lon}&method={CALCULATION_METHOD}"
+121|     data = api_get(url)
+122|     if "error" in data:
+123|         return None
+124|     try:
+125|         timings = data["data"]["timings"]
+126|         hijri = data["data"]["date"]["hijri"]
+127|         return {
+128|             "fajr": timings["Fajr"].split()[0],
+129|             "sunrise": timings["Sunrise"].split()[0],
+130|             "dhuhr": timings["Dhuhr"].split()[0],
+131|             "asr": timings["Asr"].split()[0],
+132|             "maghrib": timings["Maghrib"].split()[0],
+133|             "isha": timings["Isha"].split()[0],
+134|             "hijri_date": "{} {} {} AH".format(hijri['day'], hijri['month']['en'], hijri['year']),
+135|             "hijri_ar": "{} {} {} \u0647\u0640".format(hijri['day'], hijri['month']['ar'], hijri['year']),
+136|         }
+137|     except (KeyError, IndexError):
+138|         return None
+139| 
+140| 
+141| def get_hijri_date():
+142|     """Get Hijri date from AlAdhan API."""
+143|     now_ist = datetime.now(IST)
+144|     date_str = now_ist.strftime("%d-%m-%Y")
+145|     url = f"{ALADHAN_BASE}/gToH/{date_str}"
+146|     data = api_get(url)
+147|     if "error" in data:
+148|         return None
+149|     try:
+150|         h = data["data"]["hijri"]
+151|         return {
+152|             "date": f"{h['day']} {h['month']['en']} {h['year']} AH",
+153|             "ar": f"{h['day']} {h['month']['ar']} {h['year']} هـ",
+154|         }
+155|     except (KeyError, IndexError):
+156|         return None
+157| 
+158| 
+159| def get_font(size, bold=False):
+160|     """Try to load a nice font, fallback to default."""
+161|     font_paths = [
+162|         "C:/Windows/Fonts/arial.ttf",
+163|         "C:/Windows/Fonts/segoeui.ttf",
+164|         "C:/Windows/Fonts/calibri.ttf",
+165|         "C:/Windows/Fonts/tahoma.ttf",
+166|     ]
+167|     if bold:
+168|         font_paths = [
+169|             "C:/Windows/Fonts/arialbd.ttf",
+170|             "C:/Windows/Fonts/segoeuib.ttf",
+171|             "C:/Windows/Fonts/calibrib.ttf",
+172|         ] + font_paths
+173| 
+174|     for fp in font_paths:
+175|         if os.path.exists(fp):
+176|             try:
+177|                 return ImageFont.truetype(fp, size)
+178|             except:
+179|                 continue
+180|     return ImageFont.load_default()
+181| 
+182| 
+183| def draw_gradient(img, top_color, bottom_color):
+184|     """Draw a vertical gradient on the image."""
+185|     draw = ImageDraw.Draw(img)
+186|     w, h = img.size
+187|     for y in range(h):
+188|         ratio = y / h
+189|         r = int(top_color[0] + (bottom_color[0] - top_color[0]) * ratio)
+190|         g = int(top_color[1] + (bottom_color[1] - top_color[1]) * ratio)
+191|         b = int(top_color[2] + (bottom_color[2] - top_color[2]) * ratio)
+192|         draw.line([(0, y), (w, y)], fill=(r, g, b))
+193| 
+194| 
+195| def draw_decorative_border(draw, w, h, accent, padding=20):
+196|     """Draw decorative Islamic-style border."""
+197|     # Outer border
+198|     draw.rectangle([padding, padding, w - padding, h - padding], outline=accent, width=2)
+199|     # Inner border
+200|     draw.rectangle([padding + 6, padding + 6, w - padding - 6, h - padding - 6], outline=accent, width=1)
+201|     # Corner decorations
+202|     corner_size = 15
+203|     for x, y in [(padding, padding), (w - padding, padding), (padding, h - padding), (w - padding, h - padding)]:
+204|         draw.rectangle([x - 3, y - 3, x + corner_size, y + corner_size], fill=accent)
+205| 
+206| 
+207| def draw_centered_text(draw, y, text, font, fill, w, max_width=None):
+208|     """Draw horizontally centered text. Returns new y position."""
+209|     bbox = draw.textbbox((0, 0), text, font=font)
+210|     tw = bbox[2] - bbox[0]
+211|     x = (w - tw) // 2
+212|     draw.text((x, y), text, font=font, fill=fill)
+213|     return y + (bbox[3] - bbox[1]) + 8
+214| 
+215| 
+216| def wrap_text(text, font, max_width, draw):
+217|     """Wrap text to fit within max_width."""
+218|     words = text.split()
+219|     lines = []
+220|     current_line = ""
+221|     for word in words:
+222|         test = f"{current_line} {word}".strip()
+223|         bbox = draw.textbbox((0, 0), test, font=font)
+224|         if bbox[2] - bbox[0] <= max_width:
+225|             current_line = test
+226|         else:
+227|             if current_line:
+228|                 lines.append(current_line)
+229|             current_line = word
+230|     if current_line:
+231|         lines.append(current_line)
+232|     return lines
+233| 
+234| 
+235| def generate_image(post_type, data, prayer_info=None):
+236|     """Generate a beautiful Islamic-themed image for the post."""
+237|     if not HAS_PILLOW:
+238|         return None
+239| 
+240|     W, H = 1080, 1080
+241|     theme = random.choice(THEMES)
+242|     img = Image.new("RGB", (W, H))
+243|     draw_gradient(img, theme["bg_top"], theme["bg_bottom"])
+244|     draw = ImageDraw.Draw(img)
+245| 
+246|     # Decorative border
+247|     draw_decorative_border(draw, W, H, theme["accent"], padding=30)
+248| 
+249|     # Subtle overlay pattern (dots)
+250|     for i in range(0, W, 40):
+251|         for j in range(0, H, 40):
+252|             draw.ellipse([i, j, i + 2, j + 2], fill=(*theme["accent"], 30))
+253| 
+254|     y = 70
+255|     margin = 70
+256|     content_width = W - margin * 2
+257| 
+258|     # Bismillah at top
+259|     bism_font = get_font(28)
+260|     y = draw_centered_text(draw, y, "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ", bism_font, theme["accent"], W)
+261|     y += 20
+262| 
+263|     # Separator
+264|     sep_text = "◆ ◇ ◆"
+265|     sep_font = get_font(20)
+266|     y = draw_centered_text(draw, y, sep_text, sep_font, theme["accent"], W)
+267|     y += 30
+268| 
+269|     if post_type == "quran_verse":
+270|         # Arabic text
+271|         ar_font = get_font(42)
+272|         ar_lines = wrap_text(data["arabic"], ar_font, content_width, draw)
+273|         for line in ar_lines:
+274|             y = draw_centered_text(draw, y, line, ar_font, theme["text"], W)
+275|         y += 20
+276| 
+277|         # Decorative line
+278|         draw.line([(W // 2 - 100, y), (W // 2 + 100, y)], fill=theme["accent"], width=2)
+279|         y += 25
+280| 
+281|         # Translation
+282|         tr_font = get_font(26)
+283|         tr_lines = wrap_text(f"\"{data['translation']}\"", tr_font, content_width, draw)
+284|         for line in tr_lines:
+285|             y = draw_centered_text(draw, y, line, tr_font, theme["subtext"], W)
+286|         y += 20
+287| 
+288|         # Reference
+289|         ref_font = get_font(24)
+290|         y = draw_centered_text(draw, y, f"— {data['reference']} —", ref_font, theme["accent"], W)
+291| 
+292|     elif post_type == "hadith":
+293|         # Title
+294|         title_font = get_font(36, bold=True)
+295|         y = draw_centered_text(draw, y, "Hadith of the Day", title_font, theme["accent"], W)
+296|         y += 25
+297| 
+298|         # Decorative line
+299|         draw.line([(W // 2 - 120, y), (W // 2 + 120, y)], fill=theme["accent"], width=2)
+300|         y += 30
+301| 
+302|         # Hadith text
+303|         ht_font = get_font(28)
+304|         ht_lines = wrap_text(f"\"{data['text']}\"", ht_font, content_width, draw)
+305|         for line in ht_lines:
+306|             y = draw_centered_text(draw, y, line, ht_font, theme["text"], W)
+307|         y += 25
+308| 
+309|         # Source
+310|         src_font = get_font(24)
+311|         y = draw_centered_text(draw, y, f"📌 {data['source']}", src_font, theme["accent"], W)
+312|         y += 10
+313|         y = draw_centered_text(draw, y, "👤 Prophet Muhammad ﷺ", src_font, theme["subtext"], W)
+314| 
+315|     elif post_type == "dhikr":
+316|         # Arabic dhikr
+317|         ar_font = get_font(52)
+318|         y = draw_centered_text(draw, y, data["arabic"], ar_font, theme["text"], W)
+319|         y += 20
+320| 
+321|         # Transliteration
+322|         tr_font = get_font(32)
+323|         y = draw_centered_text(draw, y, data["transliteration"], tr_font, theme["accent"], W)
+324|         y += 15
+325| 
+326|         # Meaning
+327|         mn_font = get_font(26)
+328|         y = draw_centered_text(draw, y, data["meaning"], mn_font, theme["subtext"], W)
+329|         y += 25
+330| 
+331|         # Count
+332|         cnt_font = get_font(28, bold=True)
+333|         y = draw_centered_text(draw, y, f"🔢 Repeat {data['count']} times", cnt_font, theme["accent"], W)
+334| 
+335|     elif post_type == "dua":
+336|         # Title
+337|         title_font = get_font(36, bold=True)
+338|         y = draw_centered_text(draw, y, "Dua of the Day", title_font, theme["accent"], W)
+339|         y += 20
+340| 
+341|         # Arabic dua
+342|         ar_font = get_font(38)
+343|         ar_lines = wrap_text(data["arabic"], ar_font, content_width, draw)
+344|         for line in ar_lines:
+345|             y = draw_centered_text(draw, y, line, ar_font, theme["text"], W)
+346|         y += 20
+347| 
+348|         # Transliteration
+349|         tr_font = get_font(22)
+350|         tr_lines = wrap_text(data["transliteration"], tr_font, content_width, draw)
+351|         for line in tr_lines:
+352|             y = draw_centered_text(draw, y, line, tr_font, theme["subtext"], W)
+353|         y += 15
+354| 
+355|         # Meaning
+356|         mn_font = get_font(24)
+357|         mn_lines = wrap_text(data["meaning"], mn_font, content_width, draw)
+358|         for line in mn_lines:
+359|             y = draw_centered_text(draw, y, line, mn_font, theme["text"], W)
+360|         y += 15
+361| 
+362|         # Source
+363|         src_font = get_font(22)
+364|         y = draw_centered_text(draw, y, f"📌 {data['source']}", src_font, theme["accent"], W)
+365| 
+366|     elif post_type == "reminder":
+367|         # Title
+368|         title_font = get_font(38, bold=True)
+369|         y = draw_centered_text(draw, y, data["title"], title_font, theme["accent"], W)
+370|         y += 25
+371| 
+372|         # Decorative line
+373|         draw.line([(W // 2 - 120, y), (W // 2 + 120, y)], fill=theme["accent"], width=2)
+374|         y += 30
+375| 
+376|         # Reminder text
+377|         rm_font = get_font(28)
+378|         rm_lines = wrap_text(data["text"], rm_font, content_width, draw)
+379|         for line in rm_lines:
+380|             y = draw_centered_text(draw, y, line, rm_font, theme["text"], W)
+381| 
+382|     elif post_type == "prayer_times":
+383|         # Title
+384|         title_font = get_font(38, bold=True)
+385|         y = draw_centered_text(draw, y, "Today's Prayer Times", title_font, theme["accent"], W)
+386|         y += 15
+387| 
+388|         # Hijri date
+389|         if prayer_info:
+390|             hj_font = get_font(24)
+391|             y = draw_centered_text(draw, y, prayer_info.get("hijri_date", ""), hj_font, theme["subtext"], W)
+392|         y += 20
+393| 
+394|         # Decorative line
+395|         draw.line([(W // 2 - 120, y), (W // 2 + 120, y)], fill=theme["accent"], width=2)
+396|         y += 25
+397| 
+398|         # Prayer times table
+399|         if prayer_info:
+400|             prayers = [
+401|                 ("Fajr", prayer_info.get("fajr", "--")),
+402|                 ("Sunrise", prayer_info.get("sunrise", "--")),
+403|                 ("Dhuhr", prayer_info.get("dhuhr", "--")),
+404|                 ("Asr", prayer_info.get("asr", "--")),
+405|                 ("Maghrib", prayer_info.get("maghrib", "--")),
+406|                 ("Isha", prayer_info.get("isha", "--")),
+407|             ]
+408|             pt_font = get_font(30, bold=True)
+409|             for name, time in prayers:
+410|                 text = f"{name}  │  {time}"
+411|                 y = draw_centered_text(draw, y, text, pt_font, theme["text"], W)
+412|                 y += 8
+413| 
+414|     # Bottom separator
+415|     y = max(y + 20, H - 120)
+416|     draw.line([(W // 2 - 100, y), (W // 2 + 100, y)], fill=theme["accent"], width=2)
+417|     y += 15
+418| 
+419|     # Footer
+420|     ft_font = get_font(20)
+421|     now_ist = datetime.now(IST).strftime("%d %B %Y")
+422|     y = draw_centered_text(draw, y, now_ist, ft_font, theme["subtext"], W)
+423|     y += 5
+424|     y = draw_centered_text(draw, y, "#IslamicReminder #Quran #Hadith", ft_font, theme["accent"], W)
+425| 
+426|     # Save
+427|     filename = f"islamic_post_{post_type}_{datetime.now(IST).strftime('%Y%m%d_%H%M%S')}.jpg"
+428|     filepath = os.path.join(OUTPUT_DIR, filename)
+429|     img.save(filepath, "JPEG", quality=95)
+430|     return filepath
+431| 
+432| 
+433| def generate_caption(post_type, data, prayer_info=None):
+434|     """Generate text caption for the post."""
+435|     now = datetime.now(IST).strftime("%Y-%m-%d %H:%M IST")
+436| 
+437|     if post_type == "quran_verse":
+438|         return (
+439|             f"📖 *Quran Verse of the Day*\n\n"
+440|             f"_{data['translation']}_\n\n"
+441|             f"📌 {data['reference']}\n\n"
+442|             f"💬 Which verse touches your heart today? Share below!\n\n"
+443|             f"#Quran #VerseOfTheDay #IslamicReminder"
+444|         )
+445|     elif post_type == "hadith":
+446|         return (
+447|             f"🕌 *Hadith of the Day*\n\n"
+448|             f"_{data['text']}_\n\n"
+449|             f"📌 {data['source']}\n"
+450|             f"👤 Prophet Muhammad ﷺ\n\n"
+451|             f"💬 How do you apply this hadith in your daily life?\n\n"
+452|             f"#Hadith #Sunnah #IslamicReminder"
+453|         )
+454|     elif post_type == "dhikr":
+455|         return (
+456|             f"🤲 *Dhikr of the Day*\n\n"
+457|             f"_{data['transliteration']}_\n"
+458|             f"Meaning: {data['meaning']}\n\n"
+459|             f"🔢 Repeat: {data['count']} times\n\n"
+460|             f"💬 Tag someone who needs this dhikr today!\n\n"
+461|             f"#Dhikr #RemembranceOfAllah #IslamicReminder"
+462|         )
+463|     elif post_type == "dua":
+464|         return (
+465|             f"🤲 *Dua of the Day*\n\n"
+466|             f"_{data['transliteration']}_\n\n"
+467|             f"Meaning: _{data['meaning']}_\n\n"
+468|             f"📌 {data['source']}\n\n"
+469|             f"💬 Save this dua and share it with someone who needs it!\n\n"
+470|             f"#Dua #IslamicReminder #Quran"
+471|         )
+472|     elif post_type == "reminder":
+473|         return (
+474|             f"✨ *{data['title']}*\n\n"
+475|             f"{data['text']}\n\n"
+476|             f"💬 Share this reminder and spread the barakah!\n\n"
+477|             f"#IslamicReminder #Muslim #Deen"
+478|         )
+479|     elif post_type == "prayer_times":
+480|         lines = ["🕌 *Today's Prayer Times*\n"]
+481|         if prayer_info:
+482|             lines.append(f"📅 {prayer_info.get('hijri_date', '')}\n")
+483|             lines.append(f"```")
+484|             lines.append(f"{'Prayer':<12} │ {'Time':<8}")
+485|             lines.append(f"─────────────────────")
+486|             for name in ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"]:
+487|                 key = name.lower()
+488|                 lines.append(f"{name:<12} │ {prayer_info.get(key, '--'):<8}")
+489|             lines.append(f"```")
+490|         lines.append(f"\n💬 Which prayer do you never miss? Comment below!\n")
+491|         lines.append(f"#PrayerTimes #Salah #IslamicReminder")
+492|         return "\n".join(lines)
+493|     return ""
+494| 
+495| 
+496| POST_TYPES = ["quran_verse", "hadith", "dhikr", "dua", "reminder", "prayer_times"]
+497| 
+498| 
+499| def generate_post(post_type=None, lat=DEFAULT_LAT, lon=DEFAULT_LON):
+500|     """Generate a complete Islamic post with image and caption."""
+501|     if post_type is None:
+502|         post_type = random.choice(POST_TYPES)
+503| 
+504|     data = None
+505|     prayer_info = None
+506|     image_path = None
+507| 
+508|     if post_type == "quran_verse":
+509|         data = random.choice(QURAN_VERSES)
+510|     elif post_type == "hadith":
+511|         data = random.choice(HADITH_COLLECTION)
+512|     elif post_type == "dhikr":
+513|         data = random.choice(DHIKR_COLLECTION)
+514|     elif post_type == "dua":
+515|         data = random.choice(DUA_COLLECTION)
+516|     elif post_type == "reminder":
+517|         data = random.choice(ISLAMIC_REMINDERS)
+518|     elif post_type == "prayer_times":
+519|         prayer_info = get_prayer_times(lat, lon)
+520|         data = {}
+521| 
+522|     # Generate image
+523|     image_path = generate_image(post_type, data, prayer_info)
+524| 
+525|     # Generate caption
+526|     caption = generate_caption(post_type, data, prayer_info)
+527| 
+528|     now = datetime.now(IST).strftime("%Y-%m-%d %H:%M IST")
+529| 
+530|     output = {
+531|         "post_type": post_type,
+532|         "caption": caption,
+533|         "image_path": image_path,
+534|         "prayer_info": prayer_info,
+535|         "timestamp": now,
+536|     }
+537| 
+538|     return output
+539| 
+540| 
+541| def main():
+542|     post_type = None
+543|     if len(sys.argv) > 1:
+544|         arg = sys.argv[1].lower().replace("-", "_")
+545|         type_map = {"quran": "quran_verse", "verse": "quran_verse", "prayer": "prayer_times", "prayertimes": "prayer_times"}
+546|         post_type = type_map.get(arg, arg if arg in POST_TYPES else None)
+547| 
+548|     post = generate_post(post_type)
+549| 
+550|     # Save output
+551|     output_path = os.path.join(OUTPUT_DIR, "output.json")
+552|     with open(output_path, "w", encoding="utf-8") as f:
+553|         json.dump(post, f, ensure_ascii=False, indent=2)
+554| 
+555|     try:
+556|         print(f"Type: {post['post_type']}")
+557|         print(f"Time: {post['timestamp']}")
+558|         if post.get('image_path'):
+559|             print(f"Image: {post['image_path']}")
+560|         print(f"\n--- CAPTION ---")
+561|         print(post['caption'])
+562|         print(f"--- END ---")
+563|     except UnicodeEncodeError:
+564|         print(f"Type: {post['post_type']}")
+565|         print(f"Image: {post.get('image_path', 'N/A')}")
+566|         print(f"Output saved to: {output_path}")
+567| 
+568| 
+569| if __name__ == "__main__":
+570|     main()
+
+(End of file — 570 lines total)

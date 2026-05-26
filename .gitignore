@@ -1,6 +1,16 @@
-/*
-!memory/
-!SOUL.md
-!USER.md
-!memory/MEMORY.md
-!.gitignore
+# Ignore temp files
+*.lock
+*.tmp
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Ignore large binary files (models, audio)
+*.onnx
+*.wav
+*.mp3
+piper_models/
+
+# Ignore OS files
+Thumbs.db
+.DS_Store

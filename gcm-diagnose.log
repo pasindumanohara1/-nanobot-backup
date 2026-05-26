@@ -1,0 +1,153 @@
+﻿Diagnose log at 2026-05-26T15:39:10Z
+
+AppPath: C:\Program Files\Git\mingw64\bin\git-credential-manager.exe
+InstallDir: C:\Program Files\Git\mingw64\bin\
+Version: 2.7.3+5fa7116896c82164996a609accd1c5ad90fe730a
+
+------------
+Diagnostic: Environment
+Skipped: False
+Success: True
+Exception: None
+Log:
+OSType: Windows
+OSVersion: 10.0 (build 19045)
+Reading environment variables... OK
+ Variables:
+HOMEPATH=\Users\pasindu
+LOCALAPPDATA=C:\Users\pasindu\AppData\Local
+COLORTERM=truecolor
+ProgramFiles(x86)=C:\Program Files (x86)
+GIT_EXEC_PATH=C:/Program Files/Git/mingw64/libexec/git-core
+TERM=xterm-256color
+ProgramFiles=C:\Program Files
+PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+HOMEDRIVE=C:
+PATH=C:/Program Files/Git/mingw64/libexec/git-core;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\pasindu\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Program Files\GitHub CLI\;C:\Users\pasindu\AppData\Local\hermes\hermes-agent\venv\Scripts;C:\Users\pasindu\.local\bin;C:\Users\pasindu\AppData\Local\Programs\Python\Python312\Scripts\;C:\Users\pasindu\AppData\Local\Programs\Python\Python312\;C:\Users\pasindu\AppData\Local\Programs\Python\Launcher\;C:\Users\pasindu\AppData\Local\Microsoft\WindowsApps;C:\Users\pasindu\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\pasindu\AppData\Roaming\npm;C:\Users\pasindu\AppData\Local\Microsoft\WinGet\Packages\BurntSushi.ripgrep.MSVC_Microsoft.Winget.Source_8wekyb3d8bbwe\ripgrep-15.1.0-x86_64-pc-windows-msvc;C:\Users\pasindu\AppData\Local\Microsoft\WinGet\Links;
+SYSTEMROOT=C:\Windows
+LC_CTYPE=C.UTF-8
+ProgramData=C:\ProgramData
+USERPROFILE=C:\Users\pasindu
+TEMP=C:\Users\pasindu\AppData\Local\Temp
+HOME=C:\Users\pasindu
+PYTHONUNBUFFERED=1
+MSYSTEM=MINGW64
+COMSPEC=C:\Windows\system32\cmd.exe
+PLINK_PROTOCOL=ssh
+PROMPT=$P$G
+GIT_TRACE2_PARENT_SID=9b2e6123-ca66-422b-a874-280f71a42ea8
+TMPDIR=C:\Users\pasindu\AppData\Local\Temp
+APPDATA=C:\Users\pasindu\AppData\Roaming
+TMP=C:\Users\pasindu\AppData\Local\Temp
+ProgramW6432=C:\Program Files
+
+
+------------
+Diagnostic: File system
+Skipped: False
+Success: True
+Exception: None
+Log:
+Temporary directory is 'C:\Users\pasindu\AppData\Local\Temp\'...
+Checking basic file I/O...
+Writing to temporary file 'C:\Users\pasindu\AppData\Local\Temp\edb343c981405abc8ffeaef2'... OK
+Reading from temporary file 'C:\Users\pasindu\AppData\Local\Temp\edb343c981405abc8ffeaef2'... OK
+Deleting temporary file 'C:\Users\pasindu\AppData\Local\Temp\edb343c981405abc8ffeaef2'... OK
+Testing IFileSystem instance...
+UserHomePath: C:\Users\pasindu
+UserDataDirectoryPath: C:\Users\pasindu\.gcm
+GetCurrentDirectory(): C:\Users\pasindu\.nanobot\workspace
+
+------------
+Diagnostic: Networking
+Skipped: False
+Success: True
+Exception: None
+Log:
+Checking networking and HTTP stack...
+Creating HTTP client... OK
+IsNetworkAvailable: True
+Sending HEAD request to http://example.com...Sending HEAD request to https://example.com... OK
+ OK
+Acquiring free TCP port... OK
+Testing local HTTP loopback connections...
+Creating new HTTP listener for http://localhost:50532/... OK
+Waiting for loopback connection... OK
+Writing response... OK
+Waiting for response data... OK
+Loopback connection data OK
+
+------------
+Diagnostic: Git
+Skipped: False
+Success: True
+Exception: None
+Log:
+Getting Git version... OK
+Git version is '2.54.0.windows.1'
+Locating current repository...Git repository at 'C:/Users/pasindu/.nanobot/workspace/.git'
+ OK
+Listing all Git configuration... OK
+Git configuration:
+file:C:/Program Files/Git/etc/gitconfig	diff.astextplain.textconv=astextplain
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.clean=git-lfs clean -- %f
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.smudge=git-lfs smudge -- %f
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.process=git-lfs filter-process
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.required=true
+file:C:/Program Files/Git/etc/gitconfig	http.sslbackend=schannel
+file:C:/Program Files/Git/etc/gitconfig	core.autocrlf=true
+file:C:/Program Files/Git/etc/gitconfig	core.fscache=true
+file:C:/Program Files/Git/etc/gitconfig	core.symlinks=false
+file:C:/Program Files/Git/etc/gitconfig	pull.rebase=false
+file:C:/Program Files/Git/etc/gitconfig	credential.helper=manager
+file:C:/Program Files/Git/etc/gitconfig	credential.https://dev.azure.com.usehttppath=true
+file:C:/Program Files/Git/etc/gitconfig	init.defaultbranch=master
+file:C:/Users/pasindu/.gitconfig	user.name=pasindumanohara1
+file:C:/Users/pasindu/.gitconfig	user.email=pasindumanohara38@gmail.com
+file:C:/Users/pasindu/.gitconfig	windows.appendatomically=false
+file:.git/config	core.repositoryformatversion=0
+file:.git/config	core.filemode=false
+file:.git/config	core.symlinks=false
+file:.git/config	core.bare=false
+file:.git/config	core.logallrefupdates=true
+file:.git/config	user.email=nanobot@backup
+file:.git/config	user.name=OWL Nanobot
+file:.git/config	remote.origin.url=https://github.com/pasindumanohara1/-nanobot-backup.git
+file:.git/config	remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+
+
+------------
+Diagnostic: Credential storage
+Skipped: False
+Success: True
+Exception: None
+Log:
+ICredentialStore instance is of type: CredentialStore
+Writing test credential... OK
+Reading test credential... OK
+Deleting test credential... OK
+
+------------
+Diagnostic: Microsoft authentication (AAD/MSA)
+Skipped: False
+Success: True
+Exception: None
+Log:
+Broker is not enabled.
+Flow type is: Auto
+Gathering MSAL token cache data... OK
+CacheDirectory: C:\Users\pasindu\AppData\Local\.IdentityService
+CacheFileName: msal.cache
+CacheFilePath: C:\Users\pasindu\AppData\Local\.IdentityService\msal.cache
+Creating cache helper... OK
+Verifying MSAL token cache persistence... OK
+
+------------
+Diagnostic: GitHub API
+Skipped: False
+Success: True
+Exception: None
+Log:
+Using 'https://github.com/' as API target.
+Querying '/meta' endpoint... OK
+

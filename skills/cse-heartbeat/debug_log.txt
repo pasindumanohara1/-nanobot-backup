@@ -1,0 +1,50 @@
+=== CSE API Debug ===
+requests version: 2.32.5
+Step 1: GET main page...
+  Status: 200, Length: 24751
+Step 2: POST tradeSummary...
+  Status: 200, Length: 141794
+  Response (first 1000):
+{"reqTradeSummery":[{"id":204,"name":"ABANS ELECTRICALS PLC","symbol":"ABAN.N0000","logoUrl":"upload_logo/642_1603172106.jpeg","quantity":1,"percentageChange":-1.1096316023080337,"change":-12.5,"price":1114.0,"previousClose":1126.5,"high":1130.0,"low":1100.0,"lastTradedTime":1779439827740,"issueDate":"01/JAN/1984","turnover":264046.0,"sharevolume":237,"tradevolume":17,"marketCap":5.69316384E9,"marketCapPercentage":0.0,"open":1100.0,"closingPrice":1114.0,"crossingVolume":237,"crossingTradeVol":17,"status":0},{"id":1845,"name":"ABANS FINANCE PLC","symbol":"AFSL.N0000","logoUrl":"upload_logo/1069_1601609724.jpeg","quantity":5000,"percentageChange":7.991360691144709,"change":7.4,"price":100.0,"previousClose":92.6,"high":100.0,"low":98.6,"lastTradedTime":1779439111738,"issueDate":"27/JUN/2011","turnover":2013248.5,"sharevolume":20139,"tradevolume":18,"marketCap":7.3693171E9,"marketCapPercentage":0.0,"open":99.0,"closingPrice":100.0,"crossingVolume":20139,"crossingTradeVol":18,"status":3},{"
+  JSON keys: ['reqTradeSummery']
+  Total stocks: 290
+  First stock keys: ['id', 'name', 'symbol', 'logoUrl', 'quantity', 'percentageChange', 'change', 'price', 'previousClose', 'high', 'low', 'lastTradedTime', 'issueDate', 'turnover', 'sharevolume', 'tradevolume', 'marketCap', 'marketCapPercentage', 'open', 'closingPrice', 'crossingVolume', 'crossingTradeVol', 'status']
+  First stock sample:
+{
+  "id": 204,
+  "name": "ABANS ELECTRICALS PLC",
+  "symbol": "ABAN.N0000",
+  "logoUrl": "upload_logo/642_1603172106.jpeg",
+  "quantity": 1,
+  "percentageChange": -1.1096316023080337,
+  "change": -12.5,
+  "price": 1114.0,
+  "previousClose": 1126.5,
+  "high": 1130.0,
+  "low": 1100.0,
+  "lastTradedTime": 1779439827740,
+  "issueDate": "01/JAN/1984",
+  "turnover": 264046.0,
+  "sharevolume": 237,
+  "tradevolume": 17,
+  "marketCap": 5693163840.0,
+  "marketCapPercentage": 0.0,
+  "open": 1100.0,
+  "closingPrice": 1114.0,
+  "crossingVolume": 237,
+  "crossingTradeVol": 17,
+  "status": 0
+}
+
+  Field check:
+    'symbol' present: True, value: ABAN.N0000
+    'name' present: True, value: ABANS ELECTRICALS PLC
+    'price' present: True, value: 1114.0
+    'previousClose' present: True, value: 1126.5
+    'percentageChange' present: True, value: -1.1096316023080337
+    'change' present: True, value: -12.5
+    'sharevolume' present: True, value: 237
+    'lastTradedPrice' present: False, value: N/A
+    'changePercentage' present: False, value: N/A
+    'volume' present: False, value: N/A
+=== Done ===

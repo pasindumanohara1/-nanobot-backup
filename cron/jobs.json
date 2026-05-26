@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "jobs": [
+    {
+      "id": "1f08e129",
+      "name": "daily-trending-post",
+      "enabled": true,
+      "schedule": {
+        "kind": "cron",
+        "atMs": null,
+        "everyMs": null,
+        "expr": "30 0 * * *",
+        "tz": "UTC"
+      },
+      "payload": {
+        "kind": "agent_turn",
+        "message": "Run the daily trending post script and send the result to Telegram. Steps: 1) Run `cd C:\\Users\\pasindu\\Desktop\\automation\\fb_post_maker && python scripts\\daily_post.py` 2) Read `C:\\Users\\pasindu\\Desktop\\automation\\fb_post_maker\\output.json` 3) If post_text is not null, send the post_text as message content with the image from the image field to telegram channel -1003809102397 using the message tool. If post_text is null, send a message saying 'No new trending items today.'",
+        "deliver": true,
+        "channel": "telegram",
+        "to": "1721575073",
+        "channelMeta": {
+          "message_id": 442,
+          "user_id": 1721575073,
+          "username": "Pasindumanohara",
+          "first_name": "pasindu",
+          "is_group": false,
+          "message_thread_id": null,
+          "is_forum": false,
+          "reply_to_message_id": null,
+          "_wants_stream": true
+        },
+        "sessionKey": "telegram:1721575073"
+      },
+      "state": {
+        "nextRunAtMs": 1779841800000,
+        "lastRunAtMs": 1779669781258,
+        "lastStatus": "ok",
+        "lastError": null,
+        "runHistory": [
+          {
+            "runAtMs": 1779669781258,
+            "status": "ok",
+            "durationMs": 51772,
+            "error": null
+          }
+        ]
+      },
+      "createdAtMs": 1779642099607,
+      "updatedAtMs": 1779669833030,
+      "deleteAfterRun": false
+    },
+    {
+      "id": "dream",
+      "name": "dream",
+      "enabled": true,
+      "schedule": {
+        "kind": "every",
+        "atMs": null,
+        "everyMs": 7200000,
+        "expr": null,
+        "tz": null
+      },
+      "payload": {
+        "kind": "system_event",
+        "message": "",
+        "deliver": false,
+        "channel": null,
+        "to": null,
+        "channelMeta": {},
+        "sessionKey": null
+      },
+      "state": {
+        "nextRunAtMs": 1779814100190,
+        "lastRunAtMs": null,
+        "lastStatus": null,
+        "lastError": null,
+        "runHistory": []
+      },
+      "createdAtMs": 1779806899920,
+      "updatedAtMs": 1779806899920,
+      "deleteAfterRun": false
+    }
+  ]
+}
